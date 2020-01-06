@@ -1,0 +1,7 @@
+version: "3.7"
+services:
+  app:
+    command: npm run production
+    container_name: sure-app-production
+    volumes:
+    - ./:/usr/src/app
