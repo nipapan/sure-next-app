@@ -1,6 +1,26 @@
 version: "3.7"
 services:
   app:
+    container_name: sure-next-app
+    build: .
+    command: npm run dev
+    working_dir: /usr/src/app
+    environment:
+      DB_HOST: db
+      DB_CONNECTION_URI: postgres://aom:secret@db:5432/sure-next-app
+
     ports:
       - "3000:3000"
-    build: .
+    volumes:
+      - ./:/usr/src/app
+
+  #  Postgres
+  db:
+    image: postgres:12
+    environment:
+      POSTGRES_DB: sure-next-app
+      POSTGRES_USER: aom
+      POSTGRES_PASSWORD: secret
+
+    ports:
+      - "5432:5432"
