@@ -1,18 +1,20 @@
-const user = require('../../models/user');
+const User = require('../../models/User');
 const error = require('../../helpers/error');
 const { check, validationResult } = require('express-validator');
 
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
-const isUnique = (email) => {
-   return user.getByEmail(email)
-      .then(data => {
-         if (data) {
-            return Promise.reject('email is in used');
-         }
-      })
-      .catch( err => { return Promise.reject(err) } );
+const isUnique = async (email) => {
+   try {
+      const user = await User.query().findOne({email: email});
+      if (user instanceof User) {
+         return Promise.reject('email is in used');
+      }
+   }
+   catch (err) {
+      return Promise.reject(err);
+   }
 }
 
 const validate = () => {
@@ -26,7 +28,7 @@ const validate = () => {
    ]
 }
 
-const handleRegister = (req, res) => {
+const handleRegister = async (req, res) => {
    const { email, password, firstName, lastName } = req.body;
 
    const results = validationResult(req);
@@ -37,9 +39,29 @@ const handleRegister = (req, res) => {
    const salt = bcrypt.genSaltSync(saltRounds);
    const hash = bcrypt.hashSync(password, salt);
 
-   user.create(email, hash, firstName, lastName)
-      .then(data => res.status(200).json({ success: true, data: { user: data } }))
-      .catch(err => res.status(500).json({ success: false, data: error.format(error.TYPES.USER_CREATE, err) }))
+   try {
+      const user = await User.transaction(async trx => {
+         const newUser = await User.query(trx)
+            .insert({
+               email: email,
+               hash: hash
+            });
+
+         const userAttr = await newUser.$relatedQuery('attribute', trx)
+            .insertAndFetch({
+               firstName: firstName,
+               lastName: lastName
+            })
+            .withGraphFetched('login(hideHashSelect)');
+         return userAttr;
+      });
+
+      return res.status(200).json({ success: true, data: { user: user } });
+   } catch (err) {
+      console.log(err);
+      return res.status(500).json({ success: false, data: error.format(error.TYPES.USER_CREATE, err) });
+   }
+
 }
 
 module.exports = {

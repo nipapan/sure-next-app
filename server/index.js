@@ -14,6 +14,10 @@ const handle = nextApp.getRequestHandler();
 
 const port = 3000;
 
+const knex = require('./config/database');
+const { Model } = require('objection');
+Model.knex(knex);
+
 nextApp.prepare().then(async () => {
    const app = express();
 
