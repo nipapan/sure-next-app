@@ -7,6 +7,8 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { CircularProgress } from '@material-ui/core';
 
+const api = require('../utils/api');
+
 const useStyles = makeStyles(theme => ({
    layout: {
       display: 'flex',
@@ -48,6 +50,21 @@ const Register = () => {
    });
    const [submitting, setSubmitting] = React.useState(false);
 
+   const handleRegister = async (event) => {
+      event.preventDefault();
+      const { email, password, firstName, lastName } = formData;
+      const { success, data } = await api.postAsync('/auth/register', {
+         email,
+         password,
+         firstName,
+         lastName
+      });
+      if(success) {
+         window.location.replace('/login');
+         return;
+      }
+   };
+
    return (
       <main className={classes.layout}>
          <Paper className={classes.paper} elevation={2}>
@@ -61,7 +78,7 @@ const Register = () => {
                   Register
                </Typography>
             </Box>
-            <form method="post" className={classes.form} noValidate>
+            <form method="post" className={classes.form} noValidate onSubmit={handleRegister}>
                <TextField
                   margin="normal"
                   required

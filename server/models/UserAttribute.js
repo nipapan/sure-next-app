@@ -1,6 +1,6 @@
-const { Model } = require('objection');
+const SoftDeleteModel = require('./base/SoftDeleteModel');
 
-class UserAttribute extends Model {
+class UserAttribute extends SoftDeleteModel {
    static get tableName() {
       return 'user_attributes';
    }
@@ -10,12 +10,12 @@ class UserAttribute extends Model {
 
       return {
          login: {
-            relation: Model.BelongsToOneRelation,
+            relation: SoftDeleteModel.BelongsToOneRelation,
             modelClass: User,
             join: {
                from: 'user_attributes.userId',
                to: 'users.id'
-            }
+            },
          }
       };
    }

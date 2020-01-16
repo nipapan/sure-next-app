@@ -1,4 +1,5 @@
-import express from 'express';
+const express = require('express');
+const passport = require('passport');
 
 const registerController = require('../controllers/auth/register');
 const loginController = require('../controllers/auth/login');

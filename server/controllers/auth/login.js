@@ -1,6 +1,7 @@
 const User = require('../../models/User');
 const error = require('../../helpers/error');
 const { check, validationResult } = require('express-validator');
+const { signToken } = require('./utils');
 
 const bcrypt = require('bcryptjs');
 
@@ -25,10 +26,13 @@ const handleLogin = async (req, res) => {
       if (user instanceof User) {
          const isValid = bcrypt.compareSync(password, user.hash);
          if(isValid) {
-            return res.status(200).json({success: true, data: {user: user}});
+            const token = signToken(user);
+            return res.status(200)
+               .cookie('jwt', token, {httpOnly: true})
+               .json({ success: true, data: { id: user.id } });
          }
       }
-      return res.status(404).json({success: false, data: error.format(error.TYPES.LOGIN_WRONG_CREDENTIAL, 'wrong email or password')});
+      return res.status(401).json({success: false, data: error.format(error.TYPES.LOGIN_WRONG_CREDENTIAL, 'wrong email or password')});
    }
    catch (err) {
       return res.status(500).json({success: false, data: error.format(error.TYPES.USER_DB_ERR, err)});

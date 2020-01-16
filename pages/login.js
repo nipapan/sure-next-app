@@ -7,6 +7,8 @@ import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
 
+const api = require('../utils/api');
+
 const useStyles = makeStyles(theme => ({
    layout: {
       display: 'flex',
@@ -44,6 +46,16 @@ const LoginForm = () => {
    });
    const [submitting, setSubmitting] = React.useState(false);
 
+   const handleLogin = async (event) => {
+      event.preventDefault();
+      const { email, password } = formData;
+      const { success, data } = await api.postAsync('/auth/login', { email, password });
+      if (success) {
+         window.location.replace('/');
+         return;
+      }
+   }
+
    return (
       <main className={classes.layout}>
          <Paper className={classes.paper} elevation={2}>
@@ -60,7 +72,7 @@ const LoginForm = () => {
                   Log in with your email
                </Typography>
             </Box>
-            <form method="post" className={classes.form} noValidate>
+            <form method="post" className={classes.form} noValidate onSubmit={handleLogin}>
                <TextField
                   margin="normal"
                   required

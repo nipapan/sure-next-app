@@ -1,10 +1,13 @@
 require('dotenv').config();
 
-import express from 'express';
-import next from 'next';
-import { urlencoded, json } from 'body-parser';
-import cookieParser from 'cookie-parser';
-import passport from 'passport';
+const express = require('express');
+const next = require('next');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+
+const passport = require('passport');
+
+const JwtAuth = require('./middlewares/jwtAuth');
 
 import router from './router';
 
@@ -20,15 +23,16 @@ Model.knex(knex);
 
 nextApp.prepare().then(async () => {
    const app = express();
-
-   app.use(urlencoded({extended: true}));
-   app.use(json());
-   app.use(cookieParser());
    app.use(passport.initialize());
+   app.use(bodyParser.urlencoded({extended: true}));
+   app.use(bodyParser.json());
+   app.use(cookieParser());
+
+   passport.use(JwtAuth);
 
    router(app);
 
-   app.get('*', (req, res) => {
+   app.get('*', passport.authenticate('jwt', {session: false}), (req, res) => {
       return handle(req, res);
    });
 

@@ -1,13 +1,14 @@
 const User = require('../../models/User');
 const error = require('../../helpers/error');
 const { check, validationResult } = require('express-validator');
+const { signToken } = require('./utils');
 
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
 const isUnique = async (email) => {
    try {
-      const user = await User.query().findOne({email: email});
+      const user = await User.query().findOne({email: email}).withArchived();
       if (user instanceof User) {
          return Promise.reject('email is in used');
       }
@@ -51,12 +52,14 @@ const handleRegister = async (req, res) => {
             .insertAndFetch({
                firstName: firstName,
                lastName: lastName
-            })
-            .withGraphFetched('login(hideHashSelect)');
-         return userAttr;
+            });
+         return newUser;
       });
 
-      return res.status(200).json({ success: true, data: { user: user } });
+      const token = signToken(user);
+      return res.status(200)
+         .cookie('jwt', token, {httpOnly: true})
+         .json({ success: true, data: { id: user.id } });
    } catch (err) {
       console.log(err);
       return res.status(500).json({ success: false, data: error.format(error.TYPES.USER_CREATE, err) });
