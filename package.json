@@ -25,7 +25,7 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.20.6",
     "lodash": "^4.17.15",
-    "next": "9.1.7",
+    "next": "9.3.2",
     "now": "^16.7.3",
     "objection": "^2.1.2",
     "passport": "^0.4.1",
